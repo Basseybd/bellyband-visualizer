@@ -4,7 +4,7 @@
 
         <script>
             db_password = "abc123"
-            // Returns a promise with the x, y, z, ID, and relative time stamps in a dictionary
+            // Returns a promise with the x, y, z, ID, epcs, and relative time stamps in a dictionary
             function getData() {
                 return axios.post("https://0.0.0.0:5000/api/iot/0", {
                     'data': { 'db_password': db_password }
@@ -13,6 +13,7 @@
                     ys = []
                     zs = []
                     ids = []
+                    epcs = []
                     relative_timestamps = []
 
                     for(i = 0; i < resp.data.data.length; i++) {
@@ -20,6 +21,7 @@
                         xs.push(freeformData.xLocation);
                         ys.push(freeformData.yLocation);
                         zs.push(freeformData.zLocation);
+                        epcs.push(freeformData.epc);
                         ids.push(resp.data.data[i].id);
                         relative_timestamps.push(resp.data.data[i].relative_timestamp);
                     }
@@ -28,6 +30,7 @@
                         xData: xs,
                         yData: ys,
                         zData: zs,
+                        epcData: epcs,
                         idData: ids,
                         relativeTimestampData: relative_timestamps
                     }
