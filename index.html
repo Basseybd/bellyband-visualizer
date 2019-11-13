@@ -3,10 +3,11 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.js"></script>
 
         <script>
+            db_password = "abc123"
             // Returns a promise with the x, y, z, ID, and relative time stamps in a dictionary
             function getData() {
                 return axios.post("https://0.0.0.0:5000/api/iot/0", {
-                    'data': { 'db_password': "abc123" }
+                    'data': { 'db_password': db_password }
                 }).then(function(resp) {
                     xs = []
                     ys = []
