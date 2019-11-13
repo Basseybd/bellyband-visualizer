@@ -1,0 +1,43 @@
+<html>
+    <head>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.js"></script>
+
+        <script>
+            // Returns a promise with the x, y, z, ID, and relative time stamps in a dictionary
+            function getData() {
+                return axios.post("https://0.0.0.0:5000/api/iot/0", {
+                    'data': { 'db_password': "abc123" }
+                }).then(function(resp) {
+                    xs = []
+                    ys = []
+                    zs = []
+                    ids = []
+                    relative_timestamps = []
+
+                    for(i = 0; i < resp.data.data.length; i++) {
+                        freeformData = JSON.parse(resp.data.data[i].freeform);
+                        xs.push(freeformData.xLocation);
+                        ys.push(freeformData.yLocation);
+                        zs.push(freeformData.zLocation);
+                        ids.push(resp.data.data[i].id);
+                        relative_timestamps.push(resp.data.data[i].relative_timestamp);
+                    }
+
+                    return {
+                        xData: xs,
+                        yData: ys,
+                        zData: zs,
+                        idData: ids,
+                        relativeTimestampData: relative_timestamps
+                    }
+                });
+            }
+        </script>
+    </head>
+
+    <body>
+        <h1>Hello</h1>
+        <!-- You need to resolve the promise, cause the data fetching takes half a second, so make sure you do a then callback -->
+        <button onClick="getData().then(data => console.log(data))">Click me</button>
+    </body>
+</html>
