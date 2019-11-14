@@ -1,0 +1,86 @@
+<html>
+<head>
+    <style>
+        textarea {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Saving</h1>
+<label for="savefilename">filename:</label>
+<input id="savefilename" type="text" value="myfile.txt" />
+<textarea id="savedata">
+this is some test data
+</textarea>
+<button id="save">Save</button>
+
+<h1>Loading</h1>
+<label for="loadfilename">filename:</label>
+<input id="loadfilename" type="text" value="myfile.txt" />
+<textarea id="loaddata">
+</textarea>
+<button id="load">Load</button>
+
+</body>
+<script>
+    // make $ a shortcut for document.querySelector
+    const $ = document.querySelector.bind(document);
+
+    // when the user clicks 'save'
+    $("#save").addEventListener('click', function() {
+
+        // get the filename and data
+        const filename = $("#savefilename").value;
+        const data = $("#savedata").value;
+
+        // save
+        saveFile(filename, data, function(err) {
+            if (err) {
+                alert("failed to save: " + filename + "\n" + err);
+            } else {
+                alert("saved: " + filename);
+            }
+        });
+    });
+
+    // when the user clicks load
+    $("#load").addEventListener('click', function() {
+
+        // get the filename
+        const filename = $("#loadfilename").value;
+
+        // load
+        loadFile(filename, function(err, data) {
+            if (err) {
+                alert("failed to load: " + filename + "\n" + err);
+            } else {
+                $("#loaddata").value = data;
+                alert("loaded: " + filename);
+            }
+        });
+    });
+
+    function saveFile(filename, data, callback) {
+        doXhr(filename, 'PUT', data, callback);
+    }
+
+    function loadFile(filename, callback) {
+        doXhr(filename, 'GET', '', callback);
+    }
+
+    function doXhr(url, method, data, callback) {
+        const xhr = new XMLHttpRequest();
+        xhr.open(method, url);
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                callback(null, xhr.responseText);
+            }  else {
+                callback('Request failed.  Returned status of ' + xhr.status);
+            }
+        };
+        xhr.send(data);
+    }
+</script>
+</html>
