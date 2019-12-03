@@ -5,6 +5,8 @@
 
         <script>
             db_password = "abc123"
+            update_timer = null;
+
             // Returns a promise with the x, y, z, ID, epcs, and relative time stamps in a dictionary
             function getData() {
                 return axios.post("https://0.0.0.0:5000/api/iot/0", {
@@ -64,13 +66,45 @@
                 };
                 Plotly.react('myDiv', data, layout);
             }
+
+            // For demoing purposes without real data, uncomment snippets below
+            /*
+            xs = [8, 12, 6, 4]
+            ys = [1,2,3,4]
+            zs = [1,2,3,4]
+            */
+            function update() {
+                getData().then(data => createGraph(data.xData, data.yData, data.zData));
+                createGraph(xs, ys, zs);
+                // Uncomment for demo purposes only
+                /*
+                xs.push(Math.floor(Math.random() * 10))
+                ys.push(Math.floor(Math.random() * 10))
+                zs.push(Math.floor(Math.random() * 10))
+                */
+            }
+
+            function beginUpdating() {
+                console.log("started updating");
+                updateTimer = setInterval(update, 1000);
+            }
+
+            function stopUpdating() {
+                console.log("stopped updating");
+                clearInterval(updateTimer);
+            }
+
+            function resetUpdateTimer() {
+                stopUpdating();
+                beginUpdating();
+            }
+
         </script>
     </head>
 
     <body>
         <h1>Bellyband 3D Visualizer</h1>
-        <!-- You need to resolve the promise, cause the data fetching takes half a second, so make sure you do a then callback -->
-        <button onClick="getData().then(data => createGraph(data.xData, data.yData, data.zData))">Start</button>
-        <div id="myDiv" style="width:100%;height:100%"></div>
+        <button onClick="beginUpdating()">Start</button>
+        <div onmousedown="stopUpdating()" onmouseup="beginUpdating()" id="myDiv" style="width:100%;height:100%"></div>
     </body>
 </html>
