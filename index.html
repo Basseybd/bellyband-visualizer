@@ -55,14 +55,14 @@
 
                 var data = [trace];
 
-                var layout = {margin: {
-                    l: 0,
-                    r: 0,
-                    b: 0,
-                    t: 0
-                    }};
-
-                Plotly.newPlot('myDiv', data, layout);
+                var layout = {
+                    title: "BellyBand 3D Visualizer",
+                    uirevision: 'true',
+                    xaxis: { autorange: true },
+                    yaxis: { autorange: true },
+                    zaxis: { autorange: true },
+                };
+                Plotly.react('myDiv', data, layout);
             }
         </script>
     </head>
