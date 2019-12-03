@@ -61,18 +61,21 @@
                 });
             }
 
-            function createGraph(xs, ys, zs) {
+            function createGraph(xs, ys, zs, epcs) {
                 var trace = {
                     x:xs, y:ys, z:zs,
                     mode: 'markers',
+                    text: epcs.map((x) => "EPC: " + x),
                     marker: {
-                    color: 'rgb(255, 100, 100)',
-                    size: 6,
-                    symbol: 'circle',
-                    line: {
-                    color: 'rgb(127, 127, 127)',
-                    width: 1},
-                    opacity: 0.8},
+                        color: 'rgb(255, 100, 100)',
+                        size: 6,
+                        symbol: 'circle',
+                        line: {
+                            color: 'rgb(127, 127, 127)',
+                            width: 1
+                        },
+                        opacity: 0.8
+                    },
                     type: 'scatter3d'
                 };
 
@@ -100,7 +103,7 @@
             zs = [1,2,3,4]
             */
             function update() {
-                getData().then(data => createGraph(data.xData, data.yData, data.zData));
+                getData().then(data => createGraph(data.xData, data.yData, data.zData, data.epcData));
                 // Uncomment for demo purposes only
                 /*
                 createGraph(xs, ys, zs);
