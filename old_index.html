@@ -1,0 +1,147 @@
+<html>
+    <head>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.js"></script>
+        <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+        <style>
+            body {
+                min-height: 100vh;
+                display: flex;
+            }
+            .blue-gradient {
+                background-image: linear-gradient(to right, #A7E7FF, #00B9FF);
+            }
+            .orange-gradient {
+                background-image: linear-gradient(to bottom, #fff9c2, #e0d784);
+            }
+        </style>
+
+        <script>
+            db_password = "abc123"
+            update_timer = null;
+            // Returns a promise with the x, y, z, ID, epcs, and relative time stamps in a dictionary
+            function getData() {
+                return axios.post("https://0.0.0.0:5000/api/iot/0", {
+                    'data': { 'db_password': db_password }
+                }).then(function(resp) {
+                    xs = []
+                    ys = []
+                    zs = []
+                    ids = []
+                    epcs = []
+                    relative_timestamps = []
+                    for(i = 0; i < resp.data.data.length; i++) {
+                        freeformData = JSON.parse(resp.data.data[i].freeform);
+                        xs.push(freeformData.xLocation);
+                        ys.push(freeformData.yLocation);
+                        zs.push(freeformData.zLocation);
+                        epcs.push(freeformData.epc);
+                        ids.push(resp.data.data[i].id);
+                        relative_timestamps.push(resp.data.data[i].relative_timestamp);
+                    }
+                    return {
+                        xData: xs,
+                        yData: ys,
+                        zData: zs,
+                        epcData: epcs,
+                        idData: ids,
+                        relativeTimestampData: relative_timestamps
+                    }
+                });
+            }
+            function createGraph(xs, ys, zs, epcs) {
+                var trace = {
+                    x:xs, y:ys, z:zs,
+                    mode: 'markers',
+                    text: epcs.map((x) => "EPC: " + x),
+                    marker: {
+                        color: 'rgb(255, 100, 100)',
+                        size: 6,
+                        symbol: 'circle',
+                        line: {
+                            color: 'rgb(127, 127, 127)',
+                            width: 1
+                        },
+                        opacity: 0.8
+                    },
+                    type: 'scatter3d'
+                };
+                var data = [trace];
+                var layout = {
+                    title: "BellyBand 3D Visualizer",
+                    uirevision: 'true',
+                    xaxis: { autorange: true },
+                    yaxis: { autorange: true },
+                    zaxis: { autorange: true },
+                };
+                Plotly.react('myDiv', data, layout);
+            }
+            function clearGraph() {
+                stopUpdating();
+                document.getElementById("myDiv").innerHTML = "";
+            }
+            // For demoing purposes without real data, uncomment snippets below
+            /*
+            xs = [8, 12, 6, 4]
+            ys = [1,2,3,4]
+            zs = [1,2,3,4]
+            */
+            function update() {
+                getData().then(data => createGraph(data.xData, data.yData, data.zData, data.epcData));
+                // Uncomment for demo purposes only
+                /*
+                createGraph(xs, ys, zs);
+                xs.push(Math.floor(Math.random() * 10))
+                ys.push(Math.floor(Math.random() * 10))
+                zs.push(Math.floor(Math.random() * 10))
+                */
+            }
+            function beginUpdating() {
+                console.log("started updating");
+                updateTimer = setInterval(update, 1000);
+            }
+            function stopUpdating() {
+                console.log("stopped updating");
+                clearInterval(updateTimer);
+            }
+            function resetUpdateTimer() {
+                stopUpdating();
+                beginUpdating();
+            }
+        </script>
+    </head>
+
+    <body>
+        <div class="container-fluid mx-3 mt-3">
+            <div class="row blue-gradient rounded py-5 pr-5">
+                <div class="col"> 
+                    <h1>Bellyband 3D Visualizer</h1>
+                </div>
+            </div>
+            <div class="row mt-1">
+                <div class="col-md-1 orange-gradient rounded">
+                    <div class="mt-3">
+                        <button class="btn btn-primary" onClick="beginUpdating()">Begin Visualization</button>
+                    </div>
+                    <div class="mt-5">
+                        <button class="btn btn-danger" onClick="stopUpdating()">Stop Visualization</button>
+                    </div>
+                    <div class="mt-5">
+                        <button class="btn btn-secondary" onClick="clearGraph()">Clear Visualization</button>
+                    </div>
+                </div>
+                <div class="col-md-11">
+                    <div class="container-fluid" onwheel="resetUpdateTimer()" onmousedown="stopUpdating()" onmouseup="beginUpdating()"
+                        id="myDiv" style="height:80vh; width:100%">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
