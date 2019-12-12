@@ -25,14 +25,12 @@
         </style>
 
         <script>
-            db_password = "abc123";
-            updateTimer = null;
-            currentUpdateFunction = null;
+            db_password = "abc123"
+            update_timer = null;
 
             // Returns a promise with the x, y, z, ID, epcs, and relative time stamps in a dictionary
-            function getData(time=0) {
-                url = "https://0.0.0.0:5000/api/iot/" + time.toString()
-                return axios.post(url, {
+            function getData() {
+                return axios.post("https://0.0.0.0:5000/api/iot/0", {
                     'data': { 'db_password': db_password }
                 }).then(function(resp) {
                     console.log(resp);
@@ -96,21 +94,25 @@
 
             function clearGraph() {
                 stopUpdating();
-                currentUpdateFunction = null;
-                Plotly.purge('myDiv')
+                document.getElementById("myDiv").innerHTML = "";
             }
 
-            function update(time=0) {
-                getData(time).then(data => createGraph(data.xData, data.yData, data.zData, data.epcData));
+            // For demoing purposes without real data, uncomment snippets below
+            xs = [8, 12, 6, 4]
+            ys = [1,2,3,4]
+            zs = [1,2,3,4]
+            epcs = [0, 0, 0, 0]
+            function update() {
+                createGraph(xs, ys, zs, epcs);
+                xs.push(Math.floor(Math.random() * 10))
+                ys.push(Math.floor(Math.random() * 10))
+                zs.push(Math.floor(Math.random() * 10))
+                epcs.push(0)
             }
 
-            function beginUpdating(time=0) {
-                console.log(time)
+            function beginUpdating() {
                 console.log("started updating");
-                if(currentUpdateFunction === null) {
-                    currentUpdateFunction = function() { update(time) };
-                }
-                updateTimer = setInterval(currentUpdateFunction, 1000);
+                updateTimer = setInterval(update, 1000);
             }
 
             function stopUpdating() {
@@ -135,10 +137,7 @@
             <div class="row mt-1">
                 <div class="col-md-1 orange-gradient rounded">
                     <div class="mt-3">
-                        <button class="btn btn-primary" onClick="beginUpdating()">Visualize All Data</button>
-                    </div>
-                    <div class="mt-3">
-                        <button class="btn btn-primary" onClick="beginUpdating(Math.floor(Date.now()))">Visualize Current Data</button>
+                        <button class="btn btn-primary" onClick="beginUpdating()">Begin Visualization</button>
                     </div>
                     <div class="mt-5">
                         <button class="btn btn-danger" onClick="stopUpdating()">Stop Visualization</button>
@@ -148,7 +147,7 @@
                     </div>
                 </div>
                 <div class="col-md-11">
-                    <div class="container-fluid" onmousedown="stopUpdating()" onmouseup="beginUpdating()"
+                    <div class="container-fluid" onwheel="resetUpdateTimer()" onmousedown="stopUpdating()" onmouseup="beginUpdating()"
                         id="myDiv" style="height:80vh; width:100%">
                     </div>
                 </div>
