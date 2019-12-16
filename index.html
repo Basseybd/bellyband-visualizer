@@ -31,11 +31,12 @@
 
             // Returns a promise with the x, y, z, ID, epcs, and relative time stamps in a dictionary
             function getData(time=0) {
+                dictData = {}
+
                 url = "https://0.0.0.0:5000/api/iot/" + time.toString()
                 return axios.post(url, {
                     'data': { 'db_password': db_password }
                 }).then(function(resp) {
-                    console.log(resp);
                     xs = []
                     ys = []
                     zs = []
@@ -45,44 +46,54 @@
 
                     for(i = 0; i < resp.data.data.length; i++) {
                         freeformData = JSON.parse(resp.data.data[i].freeform);
-                        xs.push(freeformData.xLocation);
-                        ys.push(freeformData.yLocation);
-                        zs.push(freeformData.zLocation);
-                        epcs.push(freeformData.epc);
-                        ids.push(resp.data.data[i].id);
-                        relative_timestamps.push(resp.data.data[i].relative_timestamp);
-                    }
+                        if(!(freeformData.epc in dictData)) {
+                            dictData[freeformData.epc] = { xs: [], ys: [], zs: [], ids: [], relative_timestamps: []}
+                        }
 
-                    return {
-                        xData: xs,
-                        yData: ys,
-                        zData: zs,
-                        epcData: epcs,
-                        idData: ids,
-                        relativeTimestampData: relative_timestamps
+                        epcDictionary = dictData[freeformData.epc]
+
+                        epcDictionary.xs.push(freeformData.xLocation);
+                        epcDictionary.ys.push(freeformData.yLocation);
+                        epcDictionary.zs.push(freeformData.zLocation);
+                        epcDictionary.ids.push(resp.data.data[i].id);
+                        epcDictionary.relative_timestamps.push(resp.data.data[i].relative_timestamp);
+
+                        arrayLen = epcDictionary.xs.length;
+
+                        // If it's a duplicate element within the last 10 seconds, pop off the duplicate
+                        if(epcDictionary.xs.length > 1 && epcDictionary.xs[arrayLen - 1] === epcDictionary.xs[arrayLen - 2] 
+                            && epcDictionary.ys[arrayLen - 1] === epcDictionary.ys[arrayLen - 2]
+                            && epcDictionary.zs[arrayLen - 1] === epcDictionary.zs[arrayLen - 2]
+                            && Math.abs(
+                                epcDictionary.relative_timestamps[arrayLen - 1] - epcDictionary.relative_timestamps[arrayLen - 2] 
+                               ) <= 10000) {
+                            epcDictionary.xs.pop()
+                            epcDictionary.ys.pop()
+                            epcDictionary.zs.pop()
+                            epcDictionary.ids.pop()
+                            epcDictionary.relative_timestamps.pop()
+                        }
                     }
+                    console.log(dictData);
+                    return dictData;
                 });
             }
 
-            function createGraph(xs, ys, zs, epcs) {
-                var trace = {
-                    x:xs, y:ys, z:zs,
-                    mode: 'markers',
-                    text: epcs.map((x) => "EPC: " + x),
-                    marker: {
-                        color: 'rgb(255, 100, 100)',
-                        size: 6,
-                        symbol: 'circle',
-                        line: {
-                            color: 'rgb(127, 127, 127)',
-                            width: 1
-                        },
-                        opacity: 0.8
-                    },
-                    type: 'scatter3d'
-                };
+            function createGraph(dictData) {
+                var traceData = []
+                Object.keys(dictData).forEach(epc => {
+                    traceData.push({
+                        x: dictData[epc].xs,
+                        y: dictData[epc].ys,
+                        z: dictData[epc].zs,
+                        mode: 'markers',
+                        type: 'scatter3d',
+                        text: epc,
+                        name: epc,
+                    });
+                });
 
-                var data = [trace];
+                console.log(traceData);
 
                 var layout = {
                     title: "BellyBand 3D Visualizer",
@@ -91,7 +102,7 @@
                     yaxis: { autorange: true },
                     zaxis: { autorange: true },
                 };
-                Plotly.react('myDiv', data, layout);
+                Plotly.react('myDiv', traceData, layout);
             }
 
             function clearGraph() {
@@ -101,11 +112,11 @@
             }
 
             function update(time=0) {
-                getData(time).then(data => createGraph(data.xData, data.yData, data.zData, data.epcData));
+                getData(time).then(data => createGraph(dictData));
             }
 
             function beginUpdating(time=0) {
-                console.log(time)
+                console.log("Updating from unix time: " + time)
                 console.log("started updating");
                 if(currentUpdateFunction === null) {
                     currentUpdateFunction = function() { update(time) };
