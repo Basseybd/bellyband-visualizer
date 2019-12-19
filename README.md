@@ -9,6 +9,8 @@ The visualization is created with Plotly, and has the following requirements:
 * The database you are using contains **only** XArray data. 
 * (Optional) - If you want the visualizer to plot new data, you must have the XArray client running
 
+![Alt text](screenshot.png)
+
 # Setup
 
 First, you must run the BellyBand API web server. For the SQLite version, this can be done by running the following command in in the `/iot-sensor-framework/database` directory. :
