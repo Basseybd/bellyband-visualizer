@@ -13,7 +13,7 @@ The visualization is created with Plotly, and has the following requirements:
 
 # Setup
 
-First, you must run the BellyBand API web server. For the SQLite version, this can be done by running the following command in in the `/iot-sensor-framework/database` directory. :
+First, you must run the BellyBand API web server. For the SQLite version, this can be done by running the following command in in the `/iot-sensor-framework/database` directory (https://github.com/drexelwireless/iot-sensor-framework). :
 
 ```
 $ ./server.sh
@@ -21,7 +21,7 @@ $ ./server.sh
 
 Note that if the password for the webserver is different from the default password of `abc123`, you must edit the `index.html` file and change the `db_password` variable to the correct password.
 
-After you have the BellyBand API web server running, you can optionally activate the XArray interrogator to stream data into your database by going to `/iot-sensor-framework/interrogator` and running: 
+After you have the BellyBand API web server running, you can optionally activate the XArray interrogator to stream data into your database by going to `/iot-sensor-framework/interrogator` (https://github.com/drexelwireless/iot-sensor-framework) and running: 
 
 ```
 $ ./client_xarray.sh
